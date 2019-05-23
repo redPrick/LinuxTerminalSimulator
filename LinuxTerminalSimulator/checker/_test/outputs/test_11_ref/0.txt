@@ -1,0 +1,1 @@
+/home/iustinian/tema2SO/checker/_test/outputs/test_11_out

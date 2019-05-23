@@ -1,0 +1,39 @@
+Iustinian-David Coriiu
+343C5
+
+Mini-shell
+
+Tema presupune interpretarea comenzilor scrile intr-un mini-shell. Comportamentul trebuie sa fie asemanator unui shell real.
+
+Intr-un loop infinit (care se termina cand se apeleaza comanda quit/exit), se foloseste parser-ul pentru a parsa si citi linia, dupa care se apeleaza functia parse_command()
+
+in parse_command(command_t *c, int level, command_t *father):
+
+	toate viitoarele apeluri vor avea ca parinte pe c
+	daca nu exista operator (c->op == NONE)
+		se parseaza o companda simpla prin apelul parse_simple (unde se trateaza cazurile de redirectare si se face executarea comenzilor)
+
+		pentru c->op == OP_SEQUENTIAL:
+			se apeleaza 2 apeluri parse_command() unul dupa altul
+
+		pentru c->op == OP_parallel
+			se apeleaza do_in_parallel care efectueaza un fork(), ce apeleaza in copil si in parinte parse_command(), apoi se asteapta in parinte terminarea copilului
+
+		pentru c->op == OP_PIPE
+			se apeleaza functia do_on_pipe, in care:
+			folosim un vector fd[2], pentru pipe()
+
+			se apeleaza fork() pentru crearea unui copilul1, in care se apeleaza alt apel fork() pentru crearea copilul2. 
+			*
+			in copil2, se inchide fd[1], se face dup2(fd[0], stdio), se inchide fd[0] si se apeleaza parse_command, dupa care se face exit pe rezultat
+
+			**
+				in parinte 2, se inchide f[0], se face dup2(fd[1], stdout), se inchide fd[1], se apeleaza parse_command si se inchide stdout, dupa care face wait pe copilul2
+
+			*
+			in parinte 1, se face wait pe copilul 1
+
+
+		
+
+
